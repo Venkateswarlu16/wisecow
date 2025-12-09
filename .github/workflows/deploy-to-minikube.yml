@@ -1,0 +1,15 @@
+name: CD — Deploy to Minikube
+on:
+  workflow_run:
+    workflows: ["CI — Build & Push Docker image"]
+    types: [completed]
+jobs:
+  deploy:
+    runs-on: self-hosted
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          kubectl -n wisecow set image deployment/wisecow wisecow=venkateswarlu16/wisecow:latest --record
+          kubectl -n wisecow rollout status deployment/wisecow --timeout=120s
+
